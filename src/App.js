@@ -4,7 +4,6 @@ import {
   Box,
   Stack,
   Select,
-  Flex,
   Grid,
   InputGroup,
   Input, InputLeftElement,
@@ -24,18 +23,18 @@ function App() {
   const [balances, setBalances] = useState([]);
   const [amount, setAmount] = useState('');
 
-  function handleTransaction(){
+  function handleTransaction() {
     
   }
 
   function createWallet(balance) {
     let newWallets = [...wallets];
-    const newWallet = ethers.Wallet.createRandom();
     newWallets.push({ privateKey: newWallet.privateKey, publicKey: newWallet.publicKey });
     console.log('he', balances.length);
     setWallets(newWallets);
     setBalances([...balances, balance]);
   }
+
 
   function getWallets() {
     return (
