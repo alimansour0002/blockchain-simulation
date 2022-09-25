@@ -11,30 +11,39 @@ import {
   theme,
   Button,
 } from '@chakra-ui/react';
+
+import _ from 'lodash'
+
 import { PhoneIcon, AddIcon, WarningIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons'
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import { ethers } from "ethers";
 import BalancesTable from './components/balancesTable'
+import { Blockchain, Block, Wallet, UnsignedTransaction, SignedTransaction, Hash } from '../src/utils/block'
+import BlockView from './components/blockView'
 
 function App() {
+  const [blockchain, setBlockchain] = useState(new Blockchain());
   const [wallet, setWallet] = useState();
   const [targetWallet, setTargetWallet] = useState();
   const [wallets, setWallets] = useState([]);
   const [balances, setBalances] = useState([]);
   const [amount, setAmount] = useState('');
 
-  function handleTransaction() {
-    
+  async function handleTransaction() {
+    const unsignedTransaction = new UnsignedTransaction(wallets[wallet].publicKey, wallets[targetWallet].publicKey, amount);
+    const signedTransaction = await wallets[wallet].signTransaction(unsignedTransaction);
+    setBlockchain((prev) => {
+      let newBlockchain = _.cloneDeep(prev);
+      newBlockchain.addTransaction(signedTransaction);
+      return newBlockchain;
+    });
   }
 
   function createWallet(balance) {
-    let newWallets = [...wallets];
-    newWallets.push({ privateKey: newWallet.privateKey, publicKey: newWallet.publicKey });
-    console.log('he', balances.length);
+    let newWallets = [...wallets, new Wallet('a')];
     setWallets(newWallets);
-    setBalances([...balances, balance]);
+    setBalances([...balances, 10]);
   }
-
 
   function getWallets() {
     return (
@@ -43,6 +52,8 @@ function App() {
 
     );
   }
+
+
   return (
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
@@ -70,7 +81,7 @@ function App() {
                 <InputRightElement children={<CloseIcon color='red.500' />} />
               }
             </InputGroup>
-            <Select value={wallet} onChange={(event) => setTargetWallet(event.target.value)} maxW='20vh' variant='filled' placeholder='select wallet' justifySelf="flex-start">
+            <Select value={targetWallet} onChange={(event) => setTargetWallet(event.target.value)} maxW='20vh' variant='filled' placeholder='select wallet' justifySelf="flex-start">
               {getWallets()}
             </Select>
 
@@ -81,7 +92,12 @@ function App() {
               <Button onClick={handleTransaction}>Send money</Button>
             }
           </Stack>
-          <BalancesTable balances={balances} />
+          {/* <BalancesTable balances={balances} /> */}
+            {
+              blockchain.blocks.map((elem)=>{
+                  return <BlockView block={elem}/>
+              })
+            }
 
         </Grid>
       </Box>

@@ -84,7 +84,7 @@ export class Wallet {
         this.privateKey = this.wallet.privateKey;
         this.publicKey = this.wallet.publicKey;
     }
-    async signTransaction(unsignedTransaction) {
+     async signTransaction(unsignedTransaction) {
         const w = new SignedTransaction(unsignedTransaction, await this.wallet.signMessage(unsignedTransaction.message));
         return w;
     }
