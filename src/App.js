@@ -10,6 +10,7 @@ import {
   InputRightElement,
   theme,
   Button,
+  useColorMode,
 } from '@chakra-ui/react';
 
 import _ from 'lodash'
@@ -32,6 +33,7 @@ function App() {
   const [isMining, setIsMining] = useState(false);
   const [miner,setMiner]=useState('');
 
+  const { toggleColorMode } = useColorMode();
   useEffect( ()=>{
     let x=createWallet();
     setMiner(0);
@@ -44,7 +46,6 @@ function App() {
     {
       x.push(blockchain.balance(wallets[i].publicKey));
     }
-    console.log('su',blockchain.pending);
     setBalances(x);
 
   },[blockchain.blocks.length])
@@ -100,6 +101,7 @@ function App() {
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
         <Grid minH="10vh" p={3}>
+          
           <ColorModeSwitcher justifySelf="flex-end" />
           <Stack direction="row">
 
