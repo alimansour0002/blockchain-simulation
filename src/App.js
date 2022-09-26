@@ -29,26 +29,25 @@ function App() {
   const [wallets, setWallets] = useState([]);
   const [balances, setBalances] = useState([]);
   const [amount, setAmount] = useState('');
-  const [addresses, setAddresses] = useState({[blockchain.coinBase.publicKey]:'CoinBase'});
+  const [addresses, setAddresses] = useState({ [blockchain.coinBase.publicKey]: 'CoinBase' });
   const [isMining, setIsMining] = useState(false);
-  const [miner,setMiner]=useState('');
+  const [miner, setMiner] = useState('');
 
   const { toggleColorMode } = useColorMode();
-  useEffect( ()=>{
-    let x=createWallet();
+  useEffect(() => {
+    let x = createWallet();
     setMiner(0);
-    
-  },[])
 
-  useEffect(()=>{
-    let x=[];
-    for(let i=0;i<wallets.length;i++)
-    {
+  }, [])
+
+  useEffect(() => {
+    let x = [];
+    for (let i = 0; i < wallets.length; i++) {
       x.push(blockchain.balance(wallets[i].publicKey));
     }
     setBalances(x);
 
-  },[blockchain.blocks.length])
+  }, [blockchain.blocks.length])
 
   useEffect(() => {
     if (!isMining) return;
@@ -65,8 +64,8 @@ function App() {
     const signedTransaction = await wallets[wallet].signTransaction(unsignedTransaction);
     setBlockchain((prev) => {
       let newBlockchain = _.cloneDeep(prev);
-      let al=newBlockchain.addTransaction(signedTransaction);
-      if(al!='Confirmed')alert(al);
+      let al = newBlockchain.addTransaction(signedTransaction);
+      if (al != 'Confirmed') alert(al);
       return newBlockchain;
     });
   }
@@ -81,10 +80,14 @@ function App() {
     });
     setWallets(newWallets);
     setBalances([...balances, 2]);
-    return newWallets[newWallets.length-1].publicKey;
+    return newWallets[newWallets.length - 1].publicKey;
   }
 
   function mineBlock() {
+    if (miner=='') {
+      alert('Select a miner');
+      return;
+    }
     setIsMining(true);
   }
 
@@ -101,7 +104,7 @@ function App() {
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
         <Grid minH="10vh" p={3}>
-          
+
           <ColorModeSwitcher justifySelf="flex-end" />
           <Stack direction="row">
 
@@ -136,18 +139,18 @@ function App() {
             }
             {(amount <= balances[wallet]) &&
               <Button onClick={handleTransaction}>Send money</Button>
-            } 
+            }
 
           </Stack>
 
           <BalancesTable balances={balances} />
-          
+
           <Stack direction='row' >
             {
               blockchain.blocks.map((elem, ind) => {
-                if (ind>0&&blockchain.blocks.length-3<=ind) return <BlockView block={elem}
-                  addressesMapping={addresses}   
-                  />
+                if (ind > 0 && blockchain.blocks.length - 3 <= ind) return <BlockView block={elem}
+                  addressesMapping={addresses}
+                />
               })
             }
 

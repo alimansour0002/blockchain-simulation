@@ -47,7 +47,7 @@ export default function BlockView(props) {
                         value={props.miner}
                         onChange={(event) => props.setMiner(event.target.value)}
                         maxW='30vh' variant='filled'
-                        placeholder='select receiver'
+                        placeholder='select miner'
                         justifySelf='center'>
                         {props.getWallets()}
                     </Select>
