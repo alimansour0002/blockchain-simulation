@@ -28,21 +28,63 @@ function App() {
   const [wallets, setWallets] = useState([]);
   const [balances, setBalances] = useState([]);
   const [amount, setAmount] = useState('');
+  const [addresses, setAddresses] = useState({[blockchain.coinBase.publicKey]:'CoinBase'});
+  const [isMining, setIsMining] = useState(false);
+  const [miner,setMiner]=useState('');
+
+  useEffect( ()=>{
+    let x=createWallet();
+    setMiner(0);
+    
+  },[])
+
+  useEffect(()=>{
+    let x=[];
+    for(let i=0;i<wallets.length;i++)
+    {
+      x.push(blockchain.balance(wallets[i].publicKey));
+    }
+    console.log('su',blockchain.pending);
+    setBalances(x);
+
+  },[blockchain.blocks.length])
+
+  useEffect(() => {
+    if (!isMining) return;
+    setBlockchain((prev) => {
+      let newBlockchain = _.cloneDeep(prev);
+      newBlockchain.addBlock(wallets[miner].publicKey);
+      return newBlockchain;
+    });
+    setIsMining(false);
+  }, [isMining])
 
   async function handleTransaction() {
-    const unsignedTransaction = new UnsignedTransaction(wallets[wallet].publicKey, wallets[targetWallet].publicKey, amount);
+    const unsignedTransaction = new UnsignedTransaction(wallets[wallet].publicKey, wallets[targetWallet].publicKey, parseInt(amount));
     const signedTransaction = await wallets[wallet].signTransaction(unsignedTransaction);
     setBlockchain((prev) => {
       let newBlockchain = _.cloneDeep(prev);
-      newBlockchain.addTransaction(signedTransaction);
+      let al=newBlockchain.addTransaction(signedTransaction);
+      if(al!='Confirmed')alert(al);
       return newBlockchain;
     });
   }
 
   function createWallet(balance) {
     let newWallets = [...wallets, new Wallet('a')];
+    setAddresses((prev) => {
+      let newAddresses = _.cloneDeep(prev);
+      let x = newWallets[newWallets.length - 1].publicKey;
+      newAddresses[x] = 'wallet ' + newWallets.length.toString();
+      return newAddresses;
+    });
     setWallets(newWallets);
-    setBalances([...balances, 10]);
+    setBalances([...balances, 2]);
+    return newWallets[newWallets.length-1].publicKey;
+  }
+
+  function mineBlock() {
+    setIsMining(true);
   }
 
   function getWallets() {
@@ -60,12 +102,13 @@ function App() {
         <Grid minH="10vh" p={3}>
           <ColorModeSwitcher justifySelf="flex-end" />
           <Stack direction="row">
+
             <Select value={wallet} onChange={(event) => setWallet(event.target.value)} maxW='20vh' variant='filled' placeholder='select wallet' justifySelf="flex-start">
               {getWallets()}
             </Select>
             <Button onClick={() => createWallet(10)}>Create Wallet</Button>
           </Stack>
-          <Stack direction="row" mt='10' maxW='90vh'>
+          <Stack direction="row" mt='10' mb='10'>
             <InputGroup maxW='40vh'>
               <InputLeftElement
                 pointerEvents='none'
@@ -73,6 +116,7 @@ function App() {
                 fontSize='1.2em'
                 children='$'
               />
+
               <Input placeholder='Enter amount' onChange={(event) => setAmount(event.target.value)} value={amount} />
               {(amount <= balances[wallet]) &&
                 <InputRightElement children={<CheckIcon color='green.500' />} />
@@ -81,7 +125,7 @@ function App() {
                 <InputRightElement children={<CloseIcon color='red.500' />} />
               }
             </InputGroup>
-            <Select value={targetWallet} onChange={(event) => setTargetWallet(event.target.value)} maxW='20vh' variant='filled' placeholder='select wallet' justifySelf="flex-start">
+            <Select value={targetWallet} onChange={(event) => setTargetWallet(event.target.value)} maxW='25vh' variant='filled' placeholder='select receiver' justifySelf="flex-start">
               {getWallets()}
             </Select>
 
@@ -90,15 +134,30 @@ function App() {
             }
             {(amount <= balances[wallet]) &&
               <Button onClick={handleTransaction}>Send money</Button>
-            }
+            } 
+
           </Stack>
-          {/* <BalancesTable balances={balances} /> */}
+
+          <BalancesTable balances={balances} />
+          
+          <Stack direction='row' >
             {
-              blockchain.blocks.map((elem)=>{
-                  return <BlockView block={elem}/>
+              blockchain.blocks.map((elem, ind) => {
+                if (ind>0&&blockchain.blocks.length-3<=ind) return <BlockView block={elem}
+                  addressesMapping={addresses}   
+                  />
               })
             }
 
+            <BlockView block={blockchain.pending}
+              mineBlock={mineBlock}
+              addressesMapping={addresses}
+              mining={isMining}
+              miner={miner}
+              setMiner={setMiner}
+              getWallets={getWallets}
+            />
+          </Stack>
         </Grid>
       </Box>
     </ChakraProvider>

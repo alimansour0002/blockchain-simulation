@@ -36,13 +36,19 @@ export class Blockchain {
         this.blocks.push(new Block(0, '0'));
         this.pending = new Block(1, '0');
         this.numberOfBlocks = 1;
-        this.miningRewar = 1;
+        this.miningReward = 1;
+        this.coinBase=new Wallet('a');
     }
-    addBlock(miner) {
+    async addBlock(miner) {
         this.pending.mine();
         this.blocks.push(this.pending);
         this.numberOfBlocks++;
         this.pending = new Block(this.numberOfBlocks, this.blocks[this.numberOfBlocks - 1].blockHash);
+        
+        let minersReward=new UnsignedTransaction(this.coinBase.publicKey,miner,this.miningReward);
+        minersReward=await this.coinBase.signTransaction(minersReward);
+        this.addTransaction(minersReward);
+
     }
     balance(address) {
         let bal = 2;
@@ -71,7 +77,7 @@ export class Blockchain {
     addTransaction(transaction) {
         if (!(transaction?.signature)) return 'Transaction is not signed';
         if (!transaction.checkvalidity) return 'error';
-        if (this.balance(transaction.from) < transaction.value) return 'no enough funds';
+        if ((transaction.from!=this.coinBase.publicKey)&&this.balance(transaction.from) < transaction.value) return 'no enough funds';
         this.pending.addTransaction(transaction);
         return 'Confirmed';
     }
