@@ -35,10 +35,14 @@ function App() {
 
   const { toggleColorMode } = useColorMode();
   useEffect(() => {
-    let x = createWallet();
+    createWallet();
     setMiner(0);
 
   }, [])
+
+  useEffect(() => {
+    setBalances([...balances, 2]);
+  }, [wallets])
 
   useEffect(() => {
     let x = [];
@@ -79,13 +83,13 @@ function App() {
       return newAddresses;
     });
     setWallets(newWallets);
-    setBalances([...balances, 2]);
     return newWallets[newWallets.length - 1].publicKey;
   }
 
   function mineBlock() {
-    if (miner=='') {
+    if (miner === '') {
       alert('Select a miner');
+
       return;
     }
     setIsMining(true);
